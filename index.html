@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <script>
+    let is_reply_tmp = "<small> 回复 </small><a class=\"reply-to\" href=\"#\"></a>";
+
+    let comment_item_tmp = "<div class=\"comment-item\">\n" +
+        "                    <span class=\"avatar\"></span>\n" +
+        "                    <div class=\"comment-body\">\n" +
+        "                        <h5 class=\"comment-user\">\n" +
+        "                            <a href=\"#\"></a>\n" +
+        "                        </h5>\n" +
+        "                        <div class=\"comment-opt hook\">" +
+        "                           <span></span>\n" +
+        "                        </div>\n" +
+        "                        <p class=\"comment-con\"></p>\n" +
+        "                    </div>\n" +
+        "                </div>";
+
+    let sub_comment_item_tmp = "<div class=\"comment-item\">\n" +
+        "                    <span class=\"avatar\"></span>\n" +
+        "                    <div class=\"sub-comment-body\">\n" +
+        "                        <h5 class=\"comment-user\">\n" +
+        "                            <a href=\"#\"></a>\n" +
+        "                        </h5>\n" +
+        "                        <p class=\"comment-con\"></p>\n" +
+        "                        <div class=\"comment-opt hook\">" +
+        "                           <a class=\"reply\" href=\"javascript:;\">回复</a> · <span></span>\n" +
+        "                        </div>\n" +
+        "                    </div>\n" +
+        "                </div>";
+
+    $.each(res.data, function (i, comment) {
+        let comment_item = $.parseHTML(comment_item_tmp);
+        $(comment_item[0]).attr('id', comment['id']);
+        $(comment_item[0]).find('.avatar').css('background', 'url(' + comment['avatar'] + ')');
+        $(comment_item[0]).find('.comment-user').find('a').text(comment['nic_name']);
+        $(comment_item[0]).find('.comment-con').text(comment['content']);
+        $(comment_item[0]).find('.comment-opt').find('.reply').attr('data', comment['id']);
+        $(comment_item[0]).find('.comment-opt').find('span').text(comment['ctime']);
+        // 生成子评论
+        if (comment['sub_comments']) {
+            $.each(comment['sub_comments'], function (j, sub_comment) {
+                let sub_comment_item = $.parseHTML(sub_comment_item_tmp);
+                $(sub_comment_item[0]).find('.comment-item').attr('id', comment['id'] + '-' + sub_comment['id']);
+                $(sub_comment_item[0]).find('.avatar').css('background', 'url(' + sub_comment['avatar'] + ')');
+                $(sub_comment_item[0]).find('.comment-user').find('a').text(sub_comment['nic_name']);
+                $(sub_comment_item[0]).find('.comment-con').text(sub_comment['content']);
+                $(sub_comment_item[0]).find('.comment-opt').find('.reply').attr('data', comment['id'] + '-' + sub_comment['id']);
+                $(sub_comment_item[0]).find('.comment-opt').find('span').text(sub_comment['ctime']);
+                // 是否为回复
+                if (sub_comment['reply_to'] != null) {
+                    let reply_to = $.parseHTML(is_reply_tmp);
+                    $(reply_to[1]).text(sub_comment['reply_to']);
+                    $(sub_comment_item[0]).find('.comment-user').append(reply_to);
+                }
+                $(comment_item[0]).find('.comment-body').append(sub_comment_item[0]);
+            });
+        }
+        $('.comments').append(comment_item[0]);
+    })
+    </script>
+</body>
+</html>
